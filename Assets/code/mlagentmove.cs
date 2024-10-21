@@ -51,12 +51,15 @@ public class MoveToTargetAgent : Agent
             AddReward(10f);
             backgroundSpriteRandere.color = Color.green;
             EndEpisode();
+            GameManager.Instance.aiScore += 1;
+            GameManager.Instance.AIScoreTxt.text = "Score : " + GameManager.Instance.aiScore;
         }
         else if(collision.TryGetComponent(out Wall wall))
         {
             AddReward(-2f);
             backgroundSpriteRandere.color = Color.red;
             EndEpisode();
+
         }
     }
 }
