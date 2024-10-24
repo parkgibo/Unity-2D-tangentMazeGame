@@ -2,65 +2,57 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class player : MonoBehaviour
+public class Player : MonoBehaviour
 {
-    private Rigidbody2D rigidbody;
-    private Animator animator;
-    private float speed = 4f;
-    Vector3 mousePos, transPos, targetPos, dist;
+    [SerializeField] private float movementSpeed = 5f; // 플레이어 이동 속도
+    [SerializeField] private SpriteRenderer backgroundSpriteRenderer; // 배경 색상 변경용
+    [SerializeField] private Transform boundary; // 위치 초기화를 위한 경계
+    [SerializeField] private float offset = 0.3f; // 위치 초기화 시 오프셋
 
-    void Start()
+    private void Update()
     {
-        rigidbody = GetComponent<Rigidbody2D>();
-        //animator = GetComponent<Animator>();
+        Move(); // 매 프레임마다 이동 함수 호출
     }
 
-    void Update()
+    private void Move()
     {
-        if (Input.GetMouseButton(0))
-            CalTargetPos();
-        RotateMove();
+        float moveX = Input.GetAxis("Horizontal") * movementSpeed * Time.deltaTime;
+        float moveY = Input.GetAxis("Vertical") * movementSpeed * Time.deltaTime;
+
+        Vector3 newPosition = transform.localPosition + new Vector3(moveX, moveY, 0);
+
+        // 위치가 경계를 벗어나지 않도록 제한
+        newPosition.x = Mathf.Clamp(newPosition.x, boundary.position.x - boundary.localScale.x / 2 + offset, boundary.position.x + boundary.localScale.x / 2 - offset);
+        newPosition.y = Mathf.Clamp(newPosition.y, boundary.position.y - boundary.localScale.y / 2 + offset, boundary.position.y + boundary.localScale.y / 2 - offset);
+
+        transform.localPosition = newPosition; // 플레이어 위치 업데이트
     }
 
-    // 마우스 위치 계산
-    void CalTargetPos()
-    {
-        mousePos = Input.mousePosition;
-        transPos = Camera.main.ScreenToWorldPoint(mousePos);
-        targetPos = new Vector3(transPos.x, transPos.y, 0);
-    }
-
-    // 플레이어 이동 및 회전 처리
-    void RotateMove()
-    {
-        dist = targetPos - transform.position;
-        transform.position += dist * speed * Time.deltaTime;
-        float angle = Mathf.Atan2(dist.y, dist.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.AngleAxis(angle - 90, Vector3.forward);
-    }
-
-    // 충돌 처리
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // 아이템과 충돌 시 플레이어 점수 증가
-        if (collision.TryGetComponent(out item item))
+        if (collision.TryGetComponent(out item item)) // 아이템에 닿았을 때
         {
-            // GameManager의 플레이어 점수 증가 메서드 호출
-            GameManager.Instance.UpdateScore(1, 0); // playerScore 증가
+            GameManager.Instance.UpdateScore(1, 0); // 플레이어 점수 증가
+            backgroundSpriteRenderer.color = Color.green; // 배경 색상 변경
+            ResetPosition(); // 플레이어 위치 초기화
+            item.ResetPosition(); // 아이템 위치 초기화
         }
-        // mazewall과 충돌 시 처리 (MoveToTargetAgent처럼 패널티 추가)
-        else if (collision.TryGetComponent(out mazewall mazewall))
+        else if (collision.TryGetComponent(out Wall wall)) // 벽에 닿았을 때
         {
-            // 원하는 패널티 로직 또는 반응을 추가할 수 있습니다
-            Debug.Log("Player hit the maze wall!");
-            GameManager.Instance.UpdateScore(-1, 0); // 패널티 적용 예시
+            GameManager.Instance.UpdateScore(-1, 0); // 플레이어 점수 감소
+            backgroundSpriteRenderer.color = Color.red; // 배경 색상 변경
+            ResetPosition(); // 플레이어 위치 초기화
+            item.ResetPosition(); // 아이템 위치 초기화
         }
-        // Wall과 충돌 시 처리
-        else if (collision.TryGetComponent(out Wall wall))
-        {
-            // 원하는 패널티 로직 또는 반응을 추가할 수 있습니다
-            Debug.Log("Player hit the wall!");
-            GameManager.Instance.UpdateScore(-1, 0); // 패널티 적용 예시
-        }
+    }
+
+    private void ResetPosition() // 플레이어 위치 초기화
+    {
+        // 위치 초기화: boundary를 기준으로 설정
+        transform.localPosition = new Vector3(
+            Random.Range(boundary.position.x - boundary.localScale.x / 2 + offset, boundary.position.x + boundary.localScale.x / 2 - offset),
+            Random.Range(boundary.position.y - boundary.localScale.y / 2 + offset, boundary.position.y + boundary.localScale.y / 2 - offset),
+            transform.localPosition.z // z축은 그대로 유지
+        );
     }
 }

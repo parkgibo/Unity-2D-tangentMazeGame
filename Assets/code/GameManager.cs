@@ -98,6 +98,7 @@ public class GameManager : MonoBehaviour
             GameOver();
         }
     }
+
     // 플레이어 승리 처리
     public void GameWin()
     {
