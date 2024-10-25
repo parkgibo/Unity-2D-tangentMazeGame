@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour
         aiScore = 0;                      
         UpdateScoreUI();                  
         gameIsActive = true;              
-        Time.timeScale = 1;               // 게임 시작 (속도를 정상으로 돌림)
+        Time.timeScale = 1; // 게임 시작 (속도를 정상으로 돌림)
     }
     // 게임 중 점수가 업데이트 될 때 호출
     public void UpdateScore(int playerIncrement, int aiIncrement)
@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
     private void UpdateScoreUI()
     {
         PlayerscoreTxt.text = "Player Score : " + playerScore;
-        AIScoreTxt.text = "AI Score : " + aiScore;
+        AIScoreTxt.text = "Ai Score : " + aiScore;
     }
     // 게임 종료 조건 체크
     private void CheckGameEnd()
@@ -93,7 +93,7 @@ public class GameManager : MonoBehaviour
         {
             GameWin();
         }
-        else if (aiScore >= winningScore)
+        if (aiScore >= winningScore)
         {
             GameOver();
         }
