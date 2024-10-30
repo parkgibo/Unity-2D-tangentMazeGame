@@ -7,23 +7,39 @@ public class Player : MonoBehaviour
     [SerializeField] float movementSpeed = 2f;
     [SerializeField] private SpriteRenderer backgroundSpriteRenderer;
     [SerializeField] private Transform boundary;
-    [SerializeField] private float offset = 0f;
     [SerializeField] private GameObject item; // 아이템 오브젝트
+
+    private Bounds boundaryBounds;
+
+    private void Start()
+    {
+        // boundary의 SpriteRenderer로부터 정확한 경계 크기를 가져옴
+        if (boundary.TryGetComponent(out SpriteRenderer boundarySpriteRenderer))
+        {
+            boundaryBounds = boundarySpriteRenderer.bounds;
+        }
+    }
 
     private void Update()
     {
         Move();
     }
+
     private void Move()
     {
-        float moveX = Input.GetAxis("Horizontal") * movementSpeed * Time.deltaTime;
-        float moveY = Input.GetAxis("Vertical") * movementSpeed * Time.deltaTime;
+        // 마우스 좌표를 월드 좌표로 변환
+        if (Input.GetMouseButton(0))
+        {
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mousePosition.z = 0;
 
-        Vector3 newPosition = transform.localPosition + new Vector3(moveX, moveY, 0);
+            // 이동 속도에 따라 플레이어가 마우스 방향으로 이동
+            Vector3 direction = (mousePosition - transform.position).normalized;
+            Vector3 newPosition = transform.position + direction * movementSpeed * Time.deltaTime;
 
-        newPosition.x = Mathf.Clamp(newPosition.x, boundary.position.x - boundary.localScale.x / 2 + offset, boundary.position.x + boundary.localScale.x / 2 - offset);
-        newPosition.y = Mathf.Clamp(newPosition.y, boundary.position.y - boundary.localScale.y / 2 + offset, boundary.position.y + boundary.localScale.y / 2 - offset);
-        transform.localPosition = newPosition;
+            // 이동 제한 없이 위치 설정
+            transform.position = newPosition;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -47,22 +63,20 @@ public class Player : MonoBehaviour
             ResetItemPosition();
         }
     }
-
     private void ResetPosition() // 플레이어 위치 초기화
     {
-        transform.localPosition = new Vector3(
-            Random.Range(boundary.position.x - boundary.localScale.x / 2 + offset, boundary.position.x + boundary.localScale.x / 2 - offset),
-            Random.Range(boundary.position.y - boundary.localScale.y / 2 + offset, boundary.position.y + boundary.localScale.y / 2 - offset),
-            transform.localPosition.z
+        transform.position = new Vector3(
+            Random.Range(boundaryBounds.min.x, boundaryBounds.max.x),
+            Random.Range(boundaryBounds.min.y, boundaryBounds.max.y),
+            transform.position.z
         );
     }
-
     private void ResetItemPosition() // 아이템 위치 초기화
     {
-        item.transform.localPosition = new Vector3(
-            Random.Range(boundary.position.x - boundary.localScale.x / 2 + offset, boundary.position.x + boundary.localScale.x / 2 - offset),
-            Random.Range(boundary.position.y - boundary.localScale.y / 2 + offset, boundary.position.y + boundary.localScale.y / 2 - offset),
-            item.transform.localPosition.z
+        item.transform.position = new Vector3(
+            Random.Range(boundaryBounds.min.x, boundaryBounds.max.x),
+            Random.Range(boundaryBounds.min.y, boundaryBounds.max.y),
+            item.transform.position.z
         );
     }
 }
