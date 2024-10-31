@@ -32,13 +32,19 @@ public class GameManager : MonoBehaviour
     private GameObject gameclearpanel;
     [SerializeField]
     private GameObject gameoverpanel;
-
     public bool gameIsActive = false;  // 게임 활성화 상태
     private int winningScore = 5;      // 승리 조건 점수
+
+    public AudioSource playbutton;
 
     void Start()
     {
         InitializeGame();  // 게임 초기화
+    }
+
+    private void Playbutton()
+    {
+        playbutton.Play();
     }
 
     // 게임 초기화
@@ -67,6 +73,7 @@ public class GameManager : MonoBehaviour
         UpdateScoreUI();                  
         gameIsActive = true;              
         Time.timeScale = 1; // 게임 시작 (속도를 정상으로 돌림)
+        Playbutton();
     }
     // 게임 중 점수가 업데이트 될 때 호출
     public void UpdateScore(int playerIncrement, int aiIncrement)
@@ -104,7 +111,8 @@ public class GameManager : MonoBehaviour
     {
         gameIsActive = false;               
         gameclearpanel.SetActive(true);     
-        PauseGame();                        
+        PauseGame();
+        Playbutton();
     }
 
     // 게임 오버 처리(AI 승리)
@@ -112,7 +120,8 @@ public class GameManager : MonoBehaviour
     {
         gameIsActive = false;               
         gameoverpanel.SetActive(true);      
-        PauseGame();                        
+        PauseGame();
+        Playbutton();
     }
     // 게임을 일시정지하는 함수
     private void PauseGame()
@@ -129,5 +138,6 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("exit");
         Application.Quit();
+        Playbutton();
     }
 }
